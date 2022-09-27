@@ -5,17 +5,23 @@ class Colorer(ABC):
     """
     Defined by ANSI escape sequences.
     See https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences
-    and https://stackoverflow.com/questions/287871/how-do-i-print-colored-text-to-the-terminal
+    and https://stackoverflow.com/questions/287871/how-do-i-print-color-text-to-the-terminal
     """
-    _base = '\033[38;2;{};{};{}m'  # RGB
+    _base = '\033[38;2;{};{};{}m'  # ;R;G;B
     _endc = '\033[0m'
 
     def __init__(self) -> None:
-        self._colors = None
+        self.colors = None
 
-    def printc(self, txt, color):
-        color = Colorer._base.format(*self._colors[color])
-        print(color + txt + Colorer._endc)
+    def color(self, txt, target_color):
+        target_color = Colorer._base.format(*self.colors[target_color])
+        return target_color + txt + Colorer._endc
+
+    def palette_showcase(self):
+        width = max([len(color) for color in self.colors])
+        for color in self.colors:
+            spaces = width - len(color) + 2
+            print(f'{color}' + spaces * ' ' + f'{self.color("█", color)}')
 
 
 class Cube9(Colorer):
@@ -24,7 +30,7 @@ class Cube9(Colorer):
     """
     def __init__(self) -> None:
         super().__init__()
-        self._colors = {
+        self.colors = {
             'black': (0, 0, 0),
             'red': (255, 0, 0),
             'green': (0, 255, 0),
@@ -38,4 +44,4 @@ class Cube9(Colorer):
 
 
 cube9 = Cube9()  # TODO: figure out why can't call class directly
-cube9.printc('█', 'cyan')
+cube9.palette_showcase()
