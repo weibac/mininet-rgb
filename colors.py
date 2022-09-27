@@ -12,12 +12,14 @@ class Colorer(ABC):
 
     def __init__(self) -> None:
         self.colors = None
+        self.name = None
 
     def color(self, txt, target_color) -> str:
         target_color = Colorer._base.format(*self.colors[target_color])
         return target_color + txt + Colorer._endc
 
     def palette_showcase(self) -> None:
+        print(self.name)
         width = max([len(color) for color in self.colors])
         for color in self.colors:
             spaces = width - len(color) + 2
@@ -30,6 +32,7 @@ class Cube9(Colorer):
     """
     def __init__(self) -> None:
         super().__init__()
+        self.name = 'Body Centered Cubic of RGB cube'
         self.colors = {
             'black': (0, 0, 0),
             'grey': (127, 127, 127),
@@ -49,6 +52,7 @@ class RainbowBGW(Colorer):
     """
     def __init__(self) -> None:
         super().__init__()
+        self.name = 'BGW and the rainbow'
         self.colors = {
             'black': (0, 0, 0),
             'grey': (127, 127, 127),
@@ -62,8 +66,10 @@ class RainbowBGW(Colorer):
         }
 
 
-cube9 = Cube9()  # TODO: figure out why can't call class directly
-rainbow = RainbowBGW()
-cube9.palette_showcase()
-print('')
-rainbow.palette_showcase()
+if __name__ == '__main__':
+    cube9 = Cube9()  # TODO: figure out why can't call class directly
+    rainbow = RainbowBGW()
+    cube9.palette_showcase()
+    print('')
+    rainbow.palette_showcase()
+    print(rainbow.color('Orange example', 'orange'))
