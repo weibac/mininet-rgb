@@ -28,9 +28,16 @@ class Colorer():
 
     def color(self, txt, target_color) -> str:
         """
-        Takes text str and color name str. Returns colored text str.
+        Takes text str and palette color name str. Returns colored text str.
         """
         target_color = Colorer._base.format(*self.colors[target_color])
+        return target_color + txt + Colorer._endc
+
+    def color_rgb(self, txt, r, g, b) -> str:
+        """
+        Takes text str and color r g b. Returns colored text str.
+        """
+        target_color = Colorer._base.format(r, g, b)
         return target_color + txt + Colorer._endc
 
     def palette_showcase(self) -> None:
@@ -51,3 +58,4 @@ if __name__ == '__main__':
     print('')
     rainbow.palette_showcase()
     print(rainbow.color('Orange example', 'orange'))
+    print(rainbow.color_rgb('Teal example', 0, 127, 127))
