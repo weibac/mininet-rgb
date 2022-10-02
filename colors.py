@@ -1,4 +1,4 @@
-import os
+import parameters as p
 
 
 class Colorer():
@@ -36,8 +36,8 @@ class Colorer():
 
 
 if __name__ == '__main__':
-    cube9 = Colorer('Boby Centered Cubic of RGB cube', os.path.join('palettes', 'cube9.csv'))
-    rainbow = Colorer('BGW and the rainbow', os.path.join('palettes', 'rainbow_bgw.csv'))
+    cube9 = Colorer(p.NAME_CUBE9, p.PATH_CUBE9)
+    rainbow = Colorer(p.NAME_RAINBOW, p.PATH_RAINBOW)
     cube9.palette_showcase()
     print('')
     rainbow.palette_showcase()
