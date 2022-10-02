@@ -15,6 +15,9 @@ class Colorer():
         self.load_palette(path)
 
     def load_palette(self, path):
+        """
+        Reads csv and sets self.colors as dict {color_name: (R, G, B)}
+        """
         with open(path, 'r') as r:
             lines = r.readlines()
         for a in range(len(lines)):
@@ -24,10 +27,16 @@ class Colorer():
         self.colors = {line[0]: tuple(line[1]) for line in lines}
 
     def color(self, txt, target_color) -> str:
+        """
+        Takes text str and color name str. Returns colored text str.
+        """
         target_color = Colorer._base.format(*self.colors[target_color])
         return target_color + txt + Colorer._endc
 
     def palette_showcase(self) -> None:
+        """
+        Shows available colors in terminal with their names and colored █
+        """
         print(self.name)
         width = max([len(color) for color in self.colors])
         for color in self.colors:
