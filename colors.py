@@ -42,13 +42,15 @@ class Colorer():
 
     def palette_showcase(self) -> None:
         """
-        Shows available colors in terminal with their names and colored █
+        Lists available colors in terminal with their names and colored █
         """
         print(self.name)
         width = max([len(color) for color in self.colors])
+        a = 1
         for color in self.colors:
             spaces = width - len(color) + 2
-            print(f'{color}' + spaces * ' ' + f'{self.color("█", color)}')
+            print(f'[{a}] {color}' + spaces * ' ' + f'{self.color("█", color)}')
+            a += 1
 
 
 if __name__ == '__main__':
