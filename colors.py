@@ -1,7 +1,7 @@
-from abc import ABC
+import os
 
 
-class Colorer(ABC):
+class Colorer():
     """
     Defined by ANSI escape sequences.
     See https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences
@@ -10,9 +10,18 @@ class Colorer(ABC):
     _base = '\033[38;2;{};{};{}m'  # ;R;G;B
     _endc = '\033[0m'
 
-    def __init__(self) -> None:
-        self.colors = None
-        self.name = None
+    def __init__(self, name, path) -> None:
+        self.name = name
+        self.load_palette(path)
+
+    def load_palette(self, path):
+        with open(path, 'r') as r:
+            lines = r.readlines()
+        for a in range(len(lines)):
+            lines[a] = lines[a].split(';')
+            lines[a][1] = lines[a][1].split(',')
+            lines[a][1] = [int(lines[a][1][b]) for b in range(3)]
+        self.colors = {line[0]: tuple(line[1]) for line in lines}
 
     def color(self, txt, target_color) -> str:
         target_color = Colorer._base.format(*self.colors[target_color])
@@ -26,49 +35,9 @@ class Colorer(ABC):
             print(f'{color}' + spaces * ' ' + f'{self.color("█", color)}')
 
 
-class Cube9(Colorer):
-    """
-    8 vertices of RGB cube + its center
-    """
-    def __init__(self) -> None:
-        super().__init__()
-        self.name = 'Body Centered Cubic of RGB cube'
-        self.colors = {
-            'black': (0, 0, 0),
-            'grey': (127, 127, 127),
-            'white': (255, 255, 255),
-            'red': (255, 0, 0),
-            'green': (0, 255, 0),
-            'blue': (0, 0, 255),
-            'yellow': (255, 255, 0),
-            'magenta': (255, 0, 255),
-            'cyan': (0, 255, 255)
-        }
-
-
-class RainbowBGW(Colorer):
-    """
-    ROYGBV (not I) + Black, Grey, White
-    """
-    def __init__(self) -> None:
-        super().__init__()
-        self.name = 'BGW and the rainbow'
-        self.colors = {
-            'black': (0, 0, 0),
-            'grey': (127, 127, 127),
-            'white': (255, 255, 255),
-            'red': (255, 0, 0),
-            'orange': (255, 127, 0),
-            'yellow': (255, 255, 0),
-            'green': (0, 255, 0),
-            'blue': (0, 0, 255),
-            'violet': (127, 0, 255)
-        }
-
-
 if __name__ == '__main__':
-    cube9 = Cube9()  # TODO: figure out why can't call class directly
-    rainbow = RainbowBGW()
+    cube9 = Colorer('Boby Centered Cubic of RGB cube', os.path.join('palettes', 'cube9.csv'))
+    rainbow = Colorer('BGW and the rainbow', os.path.join('palettes', 'rainbow_bgw.csv'))
     cube9.palette_showcase()
     print('')
     rainbow.palette_showcase()
