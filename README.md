@@ -1,0 +1,1 @@
+Dateset adapted from https://www.kaggle.com/datasets/avi1023/color-names
