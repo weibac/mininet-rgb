@@ -38,19 +38,6 @@ for inp, target in train_loader:
     # Input tensor formatting
     inp = torch.transpose(torch.stack(inp), 0, 1)
 
-    # Debug
-    # print(inp)
-    # print(len(inp))
-    # print(type(inp))
-    # print(inp.dtype)
-    # print(target)
-    # print(len(target))
-    # print(type(target))
-    # print(target.dtype)
-    # Convert input and target to tensors
-    # inp = torch.tensor(inp)
-    # target = torch.tensor(target)
-
     # Convert input and target tensor elements to floats
     inp = inp.to(torch.float64)
     target = target.to(torch.float64)
