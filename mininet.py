@@ -28,7 +28,7 @@ loss_fn = nn.CrossEntropyLoss()  # Loss function
 
 data_reader = DataReader()
 training_dataset, testing_dataset = data_reader.load_training_testing_datasets(0.5)
-train_loader = torch.utils.data.DataLoader(training_dataset, batch_size=4, shuffle=True)
+train_loader = torch.utils.data.DataLoader(training_dataset, batch_size=4, shuffle=False)
 device = torch.device("cpu")    # "cuda" for gpu, but i have an AMD :(
 
 
@@ -62,3 +62,43 @@ for inp, target in train_loader:
 
     print(f"Trainig run {idx} finished")
     idx += 1
+
+# Testing
+test_loader = torch.utils.data.DataLoader(testing_dataset, batch_size=4, shuffle=False)
+
+# Set the model to evaluation mode
+net.eval()
+
+predictions = []
+labels = []
+
+# Testing loop
+for inp, target in test_loader:
+    # Input tensor formatting
+    inp = torch.transpose(torch.stack(inp), 0, 1)
+
+    # Convert input and target tensor elements to floats
+    inp = inp.to(torch.float64)
+    target = target.to(torch.float64)
+
+    # Move them to the device
+    inp = inp.to(device)
+    target = target.to(device)
+
+    # Make predictions
+    output = net(inp)  # Run the net
+    _, predicted = torch.max(output, dim=1)  # This picks the net's max-credence category
+
+    # Store the predictions and labels
+    predictions.extend(predicted.tolist())
+    labels.extend(target.tolist())
+
+# Compute acuracy
+datapoints = len(labels)
+correct = 0
+for a in range(len(labels)):
+    if predictions[a] == labels[a]:
+        correct += 1
+accuracy = correct / datapoints
+
+print(f"\nAccuracy: {accuracy}\nGuessing at random would be 0.1111111...")
