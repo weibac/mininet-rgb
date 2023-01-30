@@ -10,7 +10,7 @@ from dataset.dataset import DataReader
 class Net(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(Net, self).__init__()
-        self.fc1 = nn.Linear(input_size, hidden_size, dtype=torch.float64)  # Fully connected layer 1
+        self.fc1 = nn.Linear(input_size, hidden_size, dtype=torch.float64)
         self.fc2 = nn.Linear(hidden_size, output_size, dtype=torch.float64)
         self.relu = nn.ReLU()
 
@@ -21,84 +21,100 @@ class Net(nn.Module):
         return x
 
 
+# Net and training parameters
 net = Net(input_size=3, hidden_size=12, output_size=9)
-
 optimizer = optim.SGD(net.parameters(), lr=0.01)  # SGD is stochastic gradient descent
 loss_fn = nn.CrossEntropyLoss()  # Loss function
-
-data_reader = DataReader()
-training_dataset, testing_dataset = data_reader.load_training_testing_datasets(0.5)
-train_loader = torch.utils.data.DataLoader(training_dataset, batch_size=4, shuffle=False)
 device = torch.device("cpu")    # "cuda" for gpu, but i have an AMD :(
 
-
-# Training loop
-idx = 0
-for inp, target in train_loader:
-    # Input tensor formatting
-    inp = torch.transpose(torch.stack(inp), 0, 1)
-
-    # Convert input and target tensor elements to floats
-    inp = inp.to(torch.float64)
-    target = target.to(torch.float64)
-
-    # Move them to processing device
-    inp = inp.to(device)
-    target = target.to(device)
-
-    # Forward pass
-    output = net(inp)
-
-    # Turn target to long ints, so I can do cross-entropy
-    target = torch.tensor(target, dtype=torch.long, device=device)
-
-    # Compute loss
-    loss = loss_fn(output, target)
-
-    # Zero gradients, backward pass, and update weights
-    optimizer.zero_grad()
-    loss.backward()
-    optimizer.step()
-
-    print(f"Trainig run {idx} finished")
-    idx += 1
-
-# Testing
+# Datasets and data loaders
+data_reader = DataReader()
+training_dataset, testing_dataset = data_reader.load_training_testing_datasets(0.5)
+train_loader = torch.utils.data.DataLoader(training_dataset, batch_size=4, shuffle=True)
 test_loader = torch.utils.data.DataLoader(testing_dataset, batch_size=4, shuffle=False)
 
-# Set the model to evaluation mode
-net.eval()
 
-predictions = []
-labels = []
+def train_model(net, optimizer, loss_fn, device, train_loader):
+    idx = 0
+    for inp, target in train_loader:
+        # Input tensor formatting
+        inp = torch.transpose(torch.stack(inp), 0, 1)
 
-# Testing loop
-for inp, target in test_loader:
-    # Input tensor formatting
-    inp = torch.transpose(torch.stack(inp), 0, 1)
+        # Convert input and target tensor elements to floats
+        inp = inp.to(torch.float64)
+        target = target.to(torch.float64)
 
-    # Convert input and target tensor elements to floats
-    inp = inp.to(torch.float64)
-    target = target.to(torch.float64)
+        # Move them to processing device
+        inp = inp.to(device)
+        target = target.to(device)
 
-    # Move them to the device
-    inp = inp.to(device)
-    target = target.to(device)
+        # Forward pass
+        output = net(inp)
 
-    # Make predictions
-    output = net(inp)  # Run the net
-    _, predicted = torch.max(output, dim=1)  # This picks the net's max-credence category
+        # Turn target to long ints, so I can do cross-entropy
+        target = target.to(torch.long)
 
-    # Store the predictions and labels
-    predictions.extend(predicted.tolist())
-    labels.extend(target.tolist())
+        # Compute loss
+        loss = loss_fn(output, target)
 
-# Compute acuracy
-datapoints = len(labels)
-correct = 0
-for a in range(len(labels)):
-    if predictions[a] == labels[a]:
-        correct += 1
-accuracy = correct / datapoints
+        # Zero gradients, backward pass, and update weights
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
 
-print(f"\nAccuracy: {accuracy}\nGuessing at random would be 0.1111111...")
+        print(f"Trainig run {idx} finished")
+        idx += 1
+
+
+def test_model(net, device, test_loader):
+    net.eval()  # Sets the model to evaluation mode
+    predictions = []
+    labels = []
+    for inp, target in test_loader:
+        # Input tensor formatting
+        inp = torch.transpose(torch.stack(inp), 0, 1)
+
+        # Convert input and target tensor elements to floats
+        inp = inp.to(torch.float64)
+        target = target.to(torch.float64)
+
+        # Move them to the device
+        inp = inp.to(device)
+        target = target.to(device)
+
+        # Make predictions
+        output = net(inp)  # Run the net
+        _, predicted = torch.max(output, dim=1)  # This picks the net's max-credence category
+
+        # Store the predictions and labels
+        predictions.extend(predicted.tolist())
+        labels.extend(target.tolist())
+
+    # Compute acuracy
+    datapoints = len(labels)
+    correct = 0
+    for a in range(len(labels)):
+        if predictions[a] == labels[a]:
+            correct += 1
+    accuracy = correct / datapoints
+
+    print(f"\nAccuracy: {accuracy}\nGuessing at random would be 0.1111111...")
+
+    if accuracy > 0.30:
+        weights = net.state_dict()
+        fc1_weights = weights["fc1.weight"].tolist()
+        fc1_biases = weights["fc1.bias"].tolist()
+        fc2_weights = weights["fc2.weight"].tolist()
+        fc2_biases = weights["fc2.bias"].tolist()
+        model_parameters = {
+            "fc1_weights": fc1_weights,
+            "fc1_biases": fc1_biases,
+            "fc2_weights": fc2_weights,
+            "fc2_biases": fc2_biases
+        }
+        print(weights)
+        # with open(f"{str(accuracy)}.bin", "wb") as file: TODO
+
+
+train_model(net, optimizer, loss_fn, device, train_loader)
+test_model(net, device, test_loader)
