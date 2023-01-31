@@ -1,11 +1,14 @@
 import json
 import torch
 from os.path import join
+from os import listdir
+
 # Own library https://github.com/weibac/color-library
 from colorlibrary.colors import Colorer
 from trainer import Net
 
 colorer = Colorer('', '')
+nets = listdir("model_weights")
 
 
 def load_net(filename):
@@ -60,8 +63,7 @@ def visualize(net, fc1_weights):
     display_color_acts(out_color_acts, categories)
 
 
-nets = ["4417acc0-62.json", "9440acc0-62.json", "79acc0-6.json"]
-
-for net in nets:
-    print(f"\n\nNeural net in file {net}\n")
-    visualize(*load_net(net))
+if __name__ == "__main__":
+    for net in nets:
+        print(f"\n\nNeural net in file {net}\n")
+        visualize(*load_net(net))
