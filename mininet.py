@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import json
 
 from dataset.dataset import MyDataset
 from dataset.dataset import DataReader
@@ -22,8 +23,12 @@ class Net(nn.Module):
 
 
 # Net and training parameters
-net = Net(input_size=3, hidden_size=12, output_size=9)
-optimizer = optim.SGD(net.parameters(), lr=0.01)  # SGD is stochastic gradient descent
+def init_net():
+    net = Net(input_size=3, hidden_size=12, output_size=9)
+    optimizer = optim.SGD(net.parameters(), lr=0.01)
+    return net, optimizer
+
+
 loss_fn = nn.CrossEntropyLoss()  # Loss function
 device = torch.device("cpu")    # "cuda" for gpu, but i have an AMD :(
 
@@ -35,16 +40,12 @@ test_loader = torch.utils.data.DataLoader(testing_dataset, batch_size=4, shuffle
 
 
 def train_model(net, optimizer, loss_fn, device, train_loader):
-    idx = 0
     for inp, target in train_loader:
-        # Input tensor formatting
-        inp = torch.transpose(torch.stack(inp), 0, 1)
-
-        # Convert input and target tensor elements to floats
+        # Input and target formatting
+        inp = torch.stack(inp, 1)
         inp = inp.to(torch.float64)
         target = target.to(torch.float64)
-
-        # Move them to processing device
+        # Move them to device
         inp = inp.to(device)
         target = target.to(device)
 
@@ -62,22 +63,16 @@ def train_model(net, optimizer, loss_fn, device, train_loader):
         loss.backward()
         optimizer.step()
 
-        print(f"Trainig run {idx} finished")
-        idx += 1
 
-
-def test_model(net, device, test_loader):
+def test_model(net, device, test_loader, idx):
     net.eval()  # Sets the model to evaluation mode
     predictions = []
     labels = []
     for inp, target in test_loader:
-        # Input tensor formatting
-        inp = torch.transpose(torch.stack(inp), 0, 1)
-
-        # Convert input and target tensor elements to floats
+        # Input and target formatting
+        inp = torch.stack(inp, 1)
         inp = inp.to(torch.float64)
         target = target.to(torch.float64)
-
         # Move them to the device
         inp = inp.to(device)
         target = target.to(device)
@@ -98,9 +93,10 @@ def test_model(net, device, test_loader):
             correct += 1
     accuracy = correct / datapoints
 
-    print(f"\nAccuracy: {accuracy}\nGuessing at random would be 0.1111111...")
+    # print(f"\nAccuracy: {accuracy}\nGuessing at random would be 0.1111111...")
 
-    if accuracy > 0.30:
+    if accuracy > 0.6:
+        print(f"Found a good one! accuracy: {accuracy}")
         weights = net.state_dict()
         fc1_weights = weights["fc1.weight"].tolist()
         fc1_biases = weights["fc1.bias"].tolist()
@@ -110,11 +106,13 @@ def test_model(net, device, test_loader):
             "fc1_weights": fc1_weights,
             "fc1_biases": fc1_biases,
             "fc2_weights": fc2_weights,
-            "fc2_biases": fc2_biases
-        }
-        print(weights)
-        # with open(f"{str(accuracy)}.bin", "wb") as file: TODO
+            "fc2_biases": fc2_biases}
+        accuracy_str = str(round(accuracy, 2)).replace(".", "-")
+        with open(f"{idx}acc{accuracy_str}.json", "w") as param_file:
+            json.dump(model_parameters, param_file)
 
 
-train_model(net, optimizer, loss_fn, device, train_loader)
-test_model(net, device, test_loader)
+for idx in range(10000):
+    net, optimizer = init_net()
+    train_model(net, optimizer, loss_fn, device, train_loader)
+    test_model(net, device, test_loader, idx)
