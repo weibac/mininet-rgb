@@ -7,7 +7,7 @@ from os import listdir
 from colorlibrary.colors import Colorer
 from trainer import Net
 
-colorer = Colorer('', '')
+colorer = Colorer()
 nets = listdir("model_weights")
 
 
