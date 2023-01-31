@@ -3,8 +3,8 @@ import torch
 from os.path import join
 # Own library https://github.com/weibac/color-library
 from colorlibrary.colors import Colorer
+from trainer import Net
 
-colorer = Colorer('', '')
 
 path = join("model_weights", "4417acc0-62.json")
 with open(path, 'r') as param_file:
@@ -15,21 +15,43 @@ fc1_biases = params["fc1_biases"]
 fc2_weights = params["fc2_weights"]
 fc2_biases = params["fc2_biases"]
 
-fc1_weights = torch.tensor(fc1_weights)
-fc1_biases = torch.tensor(fc1_biases)
-fc2_weights = torch.tensor(fc2_weights)
-fc2_biases = torch.tensor(fc2_biases)
+fc1_weights = torch.nn.parameter.Parameter(torch.tensor(fc1_weights))
+fc1_biases = torch.nn.parameter.Parameter(torch.tensor(fc1_biases))
+fc2_weights = torch.nn.parameter.Parameter(torch.tensor(fc2_weights))
+fc2_biases = torch.nn.parameter.Parameter(torch.tensor(fc2_biases))
+
+
+colorer = Colorer('', '')
+net = Net(input_size=3, hidden_size=12, output_size=9)
+net.fc1.weight = fc1_weights
+net.fc1.bias = fc1_biases
+net.fc2.weight = fc2_weights
+net.fc2.bias = fc2_biases
 
 
 def to_rgb_scale(value: float):
-    return value * -127.5 + 127.5
+    return value * 127.5 + 127.5
 
 
+def display_color_acts(color_acts, labels):
+    for idx in range(color_acts.size()[0]):
+        rgb = color_acts[idx].to(int)
+        rgb = rgb.tolist()
+        if labels:
+            print(f'{colorer.color_rgb("████", *rgb)} "{labels[idx]}"')
+        else:
+            print(colorer.color_rgb("████", *rgb))
+    print()
+
+
+print("Hidden layer activation visualization")
 fc1_color_acts = to_rgb_scale(fc1_weights)
+display_color_acts(fc1_color_acts, False)
 
-
-for idx in range(fc1_color_acts.size()[0]):
-    rgb = fc1_color_acts[idx].to(int)
-    rgb = rgb.tolist()
-    # print(rgb)
-    print(colorer.color_rgb("███", *rgb))
+print("Output layer activation visualization")
+categories = ['black', 'grey/gray', 'white', 'red', 'orange', 'yellow',
+              'green', 'blue', 'violet']
+out_acts = net(torch.eye(3, 3))  # Identity matrix
+out_acts = out_acts.transpose(0, 1)
+out_color_acts = to_rgb_scale(out_acts)
+display_color_acts(out_color_acts, categories)
