@@ -112,7 +112,8 @@ def test_model(net, device, test_loader, idx):
             json.dump(model_parameters, param_file)
 
 
-for idx in range(10000):
-    net, optimizer = init_net()
-    train_model(net, optimizer, loss_fn, device, train_loader)
-    test_model(net, device, test_loader, idx)
+if __name__ == "__main__":
+    for idx in range(10000):
+        net, optimizer = init_net()
+        train_model(net, optimizer, loss_fn, device, train_loader)
+        test_model(net, device, test_loader, idx)
