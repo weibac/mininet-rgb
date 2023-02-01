@@ -35,8 +35,8 @@ device = torch.device("cpu")    # "cuda" for gpu, but i have an AMD :(
 # Datasets and data loaders
 data_reader = DataReader()
 training_dataset, testing_dataset = data_reader.load_training_testing_datasets(0.5)
-train_loader = torch.utils.data.DataLoader(training_dataset, batch_size=4, shuffle=True)
-test_loader = torch.utils.data.DataLoader(testing_dataset, batch_size=4, shuffle=False)
+train_loader = torch.utils.data.DataLoader(training_dataset, batch_size=10, shuffle=True)
+test_loader = torch.utils.data.DataLoader(testing_dataset, batch_size=10, shuffle=False)
 
 
 def train_model(net, optimizer, loss_fn, device, train_loader):
@@ -95,7 +95,7 @@ def test_model(net, device, test_loader, idx):
 
     # print(f"\nAccuracy: {accuracy}\nGuessing at random would be 0.1111111...")
 
-    if accuracy > 0.6:
+    if accuracy > 0.73:
         print(f"Found a good one! accuracy: {accuracy}")
         weights = net.state_dict()
         fc1_weights = weights["fc1.weight"].tolist()
